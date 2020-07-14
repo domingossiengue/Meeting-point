@@ -1,0 +1,78 @@
+Imports System.IO 'Import file I/O tools
+Imports System.Security.Cryptography 'Import encryption functionality
+Imports System.Text 'Import text based processing tools
+
+Public Class LoginForm
+
+    Private Function GenerateHash() As Byte()
+        Dim ByteArray() As Byte 'byte array created to hold hash data
+        Dim sha1Hash As New SHA1CryptoServiceProvider 'Sha1 declared to provide the crypto services
+        'this uses the computehash method of the SHA1CryptoServiceProvider and accept accepts the password and username as bytes
+
+        ByteArray = sha1Hash.ComputeHash(Encoding.ASCII.GetBytes(tbPassword.Text & tbUserName.Text))
+
+        Return ByteArray
+
+    End Function
+
+    Private Function StringtoMD5(ByRef Content As String) As String
+        'declare m5 as a md5
+        Dim M5 As New System.Security.Cryptography.MD5CryptoServiceProvider
+        'declare bytestring as a byte
+        Dim ByteString() As Byte = System.Text.Encoding.ASCII.GetBytes(Content)
+        'convert bytestring to m5 compute hash
+        ByteString = M5.ComputeHash(ByteString)
+        'change finalstring value to nothing
+        Dim FinalString As String = Nothing
+
+        'convert bytestring to string
+        For Each bt As Byte In ByteString
+            FinalString &= bt.ToString("x2")
+        Next
+
+        'return the encrypted password and convert it to uppercase
+        Return FinalString.ToUpper()
+    End Function
+
+ 
+    Private Sub login()
+        'declares username
+        Dim username As String = tbUserName.Text
+
+        'encrypt password and convert to string
+        Dim password As String = StringtoMD5(tbPassword.Text)
+
+        'array to find username and password
+        Dim loginUser(1) As String
+        'array to find username
+        loginUser(0) = tbUserName.Text
+        'array to find encrypted password
+        loginUser(1) = password
+
+        'join username and password array with . delimiter
+        Dim result As String = String.Join(".", loginUser)
+
+
+        'Dim test As String = result
+
+        'default bool position
+        Dim bool As Boolean = False
+
+        'Check through each line on text file for matching username and password
+        For Each Line As String In File.ReadLines("login.txt")
+            'if username and password already exists
+            If Line.Equals(result) = True Then
+                bool = True
+            End If
+        Next
+
+        'Outputs whether the login was succesful or not
+        If bool = True Then
+            MessageBox.Show("Welcome To Meeting Point " & " " & username)
+            Form1.Show()
+            Me.Hide()
+        Else
+            MessageBox.Show("Invalid username and/or Password, Please try again")
+            tbPassword.Text = ""
+        End If
+    End Sub
